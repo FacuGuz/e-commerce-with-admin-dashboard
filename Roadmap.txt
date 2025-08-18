@@ -1,0 +1,13 @@
+orden de implementación
+
+- Configurar Spring + JPA + PostgreSQL + entidades
+
+- CRUD de productos + API + frontend catálogo
+
+- Login y JWT con roles
+
+- Carrito en frontend → invoca endpoint /orders (publica evento Kafka)
+
+- Kafka Producer + Consumer de órdenes
+
+- Dashboard con métricas vía endpoints protegidos
