@@ -1,4 +1,4 @@
-package guzman.SalesDashboard.controllers.auth;
+package guzman.SalesDashboard.controllers;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
