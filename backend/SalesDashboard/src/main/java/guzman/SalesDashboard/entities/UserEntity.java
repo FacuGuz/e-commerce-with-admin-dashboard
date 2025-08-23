@@ -3,9 +3,7 @@ package guzman.SalesDashboard.entities;
 
 import guzman.SalesDashboard.repositories.Role;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,6 +15,9 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
+@Setter
+@Getter
+@Builder
 @Entity
 @Table(name = "app_user")
 public class UserEntity implements UserDetails {
@@ -76,5 +77,9 @@ public class UserEntity implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+     @Override
+    public String getUsername() {
+        return email; 
     }
 }

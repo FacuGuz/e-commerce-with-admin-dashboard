@@ -50,5 +50,14 @@ public class UserServiceImpl implements UserService {
         
     }
 
+    @Override
+    public UserEntity getUserByEmail(String email) {
+       Optional<UserEntity> usuario = userRepository.findByEmail(email);
+        if (!usuario.isPresent()) {
+            throw new BusinessException("No se han encontrado un usuario con ese email.", HttpStatus.NOT_FOUND);
+        }
+        return modelMapper.map(usuario, new TypeToken<UserDTO>() {}.getType());
+    }
+
 
 }

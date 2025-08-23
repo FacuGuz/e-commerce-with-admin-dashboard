@@ -9,4 +9,5 @@ public interface UserService {
     public UserEntity saveUser(UserEntity user);
     public List<UserEntity> getAllUsers();
     public UserEntity getUserByUsername(String username);
+    public UserEntity getUserByEmail(String email);
 }
