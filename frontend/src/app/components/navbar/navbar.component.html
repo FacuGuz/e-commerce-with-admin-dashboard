@@ -1,135 +1,45 @@
-<nav class="bg-white shadow-lg border-b border-gray-200">
+<nav class="bg-white shadow-lg">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex justify-between h-16">
-      <!-- Logo and main nav -->
       <div class="flex items-center">
-        <div class="flex-shrink-0">
-          <a routerLink="/" class="text-2xl font-bold text-blue-600">
-            SalesDashboard
-          </a>
-        </div>
-        <div class="hidden md:ml-6 md:flex md:space-x-8">
-          <a routerLink="/" 
-             routerLinkActive="border-blue-500 text-gray-900"
-             class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-            Inicio
-          </a>
-          <a routerLink="/catalog" 
-             routerLinkActive="border-blue-500 text-gray-900"
-             class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-            Catálogo
-          </a>
-          <a *ngIf="isLoggedIn" routerLink="/cart" 
-             routerLinkActive="border-blue-500 text-gray-900"
-             class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-            Carrito
-          </a>
-          <a *ngIf="isAdmin()" routerLink="/admin" 
-             routerLinkActive="border-blue-500 text-gray-900"
-             class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-            Admin
-          </a>
-        </div>
+        <a routerLink="/" class="text-2xl font-bold text-blue-600">
+          TU MARCA
+        </a>
       </div>
 
-      <!-- User menu -->
-      <div class="flex items-center">
-        <div *ngIf="!isLoggedIn" class="flex space-x-4">
-          <a routerLink="/auth/login" 
+      <div class="flex items-center space-x-4">
+        <a routerLink="/catalog" 
+           class="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium">
+          Catálogo
+        </a>
+        
+        <a routerLink="/cart" 
+           class="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium">
+          Carrito
+        </a>
+
+        @if (isLoggedIn) {
+          @if (userRole === 'ADMIN') {
+            <a routerLink="/admin" 
+               class="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium">
+              Admin
+            </a>
+          }
+          <button 
+            (click)="authService.logout()"
+            class="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium">
+            Cerrar Sesión
+          </button>
+        } @else {
+          <a routerLink="/login" 
              class="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium">
             Iniciar Sesión
           </a>
-          <a routerLink="/auth/register" 
+          <a routerLink="/register" 
              class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
             Registrarse
           </a>
-        </div>
-
-        <div *ngIf="isLoggedIn" class="ml-3 relative">
-          <div>
-            <button (click)="toggleMenu()" 
-                    class="max-w-xs bg-white flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-              <div class="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center">
-                <span class="text-white text-sm font-medium">
-                  {{ userRole === 'ADMIN' ? 'A' : 'U' }}
-                </span>
-              </div>
-            </button>
-          </div>
-
-          <!-- Dropdown menu -->
-          <div *ngIf="isMenuOpen" 
-               class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
-            <a routerLink="/profile" 
-               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-              Mi Perfil
-            </a>
-            <a routerLink="/orders" 
-               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-              Mis Pedidos
-            </a>
-            <button (click)="logout()" 
-                    class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-              Cerrar Sesión
-            </button>
-          </div>
-        </div>
-
-        <!-- Mobile menu button -->
-        <div class="md:hidden ml-3">
-          <button (click)="toggleMenu()" 
-                  class="bg-white inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500">
-            <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Mobile menu -->
-  <div *ngIf="isMenuOpen" class="md:hidden">
-    <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t border-gray-200">
-      <a routerLink="/" 
-         class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium">
-        Inicio
-      </a>
-      <a routerLink="/catalog" 
-         class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium">
-        Catálogo
-      </a>
-      <a *ngIf="isLoggedIn" routerLink="/cart" 
-         class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium">
-        Carrito
-      </a>
-      <a *ngIf="isAdmin()" routerLink="/admin" 
-         class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium">
-        Admin
-      </a>
-      <div *ngIf="!isLoggedIn" class="pt-4 pb-3 border-t border-gray-200">
-        <a routerLink="/auth/login" 
-           class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium">
-          Iniciar Sesión
-        </a>
-        <a routerLink="/auth/register" 
-           class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium">
-          Registrarse
-        </a>
-      </div>
-      <div *ngIf="isLoggedIn" class="pt-4 pb-3 border-t border-gray-200">
-        <a routerLink="/profile" 
-           class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium">
-          Mi Perfil
-        </a>
-        <a routerLink="/orders" 
-           class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium">
-          Mis Pedidos
-        </a>
-        <button (click)="logout()" 
-                class="w-full text-left text-gray-600 hover:bg-gray-50 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium">
-          Cerrar Sesión
-        </button>
+        }
       </div>
     </div>
   </div>

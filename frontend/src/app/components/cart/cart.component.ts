@@ -1,87 +1,40 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
 import { CartService } from '../../services/cart.service';
-import { OrderService } from '../../services/order.service';
-import { CartItem } from '../../models/cart.model';
+import { CartItem } from '../../interfaces';
 
 @Component({
   selector: 'app-cart',
-  standalone: true,
-  imports: [CommonModule],
   templateUrl: './cart.component.html',
-  styleUrls: ['./cart.component.css']
+  standalone: true,
+  imports: [CommonModule]
 })
 export class CartComponent implements OnInit {
   cartItems: CartItem[] = [];
-  isLoading = false;
-  isProcessingOrder = false;
+  total = 0;
 
-  constructor(
-    private cartService: CartService,
-    private orderService: OrderService,
-    private router: Router
-  ) {}
+  constructor(private cartService: CartService) {}
 
   ngOnInit(): void {
-    this.cartService.cartItems$.subscribe(items => {
-      this.cartItems = items;
-    });
-  }
-
-  updateQuantity(item: CartItem, change: number): void {
-    const newQuantity = item.quantity + change;
-    if (newQuantity > 0) {
-      this.cartService.updateQuantity(item.product.id, newQuantity);
-    } else {
-      this.removeItem(item);
-    }
-  }
-
-  removeItem(item: CartItem): void {
-    this.cartService.removeFromCart(item.product.id);
-  }
-
-  getTotalPrice(): number {
-    return this.cartItems.reduce((total, item) => {
-      return total + (item.product.price * item.quantity);
-    }, 0);
-  }
-
-  getTotalItems(): number {
-    return this.cartItems.reduce((total, item) => total + item.quantity, 0);
-  }
-
-  checkout(): void {
-    if (this.cartItems.length === 0) {
-      return;
-    }
-
-    this.isProcessingOrder = true;
-    
-    const orderData = {
-      items: this.cartItems.map(item => ({
-        productId: item.product.id,
-        quantity: item.quantity,
-        price: item.product.price
-      })),
-      total: this.getTotalPrice()
-    };
-
-    this.orderService.createOrder(orderData).subscribe({
-      next: (response) => {
-        this.isProcessingOrder = false;
-        this.cartService.clearCart();
-        this.router.navigate(['/orders', response.id]);
-      },
-      error: (error) => {
-        this.isProcessingOrder = false;
-        console.error('Error creating order:', error);
+    this.cartService.cart$.subscribe(cart => {
+      if (cart) {
+        this.cartItems = cart.items;
+        this.total = cart.totalAmount;
       }
     });
   }
 
-  continueShopping(): void {
-    this.router.navigate(['/catalog']);
+  updateQuantity(item: CartItem, newQuantity: number): void {
+    if (newQuantity > 0) {
+      this.cartService.updateLocalCartItem(item.id, newQuantity);
+    }
+  }
+
+  removeItem(item: CartItem): void {
+    this.cartService.removeItemFromLocalCart(item.id);
+  }
+
+  clearCart(): void {
+    this.cartService.clearCart().subscribe();
   }
 }

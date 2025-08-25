@@ -1,48 +1,64 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Product, ProductFilter } from '../models/product.model';
+import { Product, Category, ProductCreateRequest, ProductUpdateRequest, CategoryCreateRequest, CategoryUpdateRequest } from '../interfaces';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProductService {
-  private readonly API_URL = 'http://localhost:8080/api/products';
+  private readonly API_URL = 'http://localhost:8080/api/v1';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
-  getProducts(filter?: ProductFilter): Observable<Product[]> {
-    let params = new HttpParams();
-    
-    if (filter) {
-      if (filter.category) params = params.set('category', filter.category);
-      if (filter.minPrice) params = params.set('minPrice', filter.minPrice.toString());
-      if (filter.maxPrice) params = params.set('maxPrice', filter.maxPrice.toString());
-      if (filter.search) params = params.set('search', filter.search);
-      if (filter.sortBy) params = params.set('sortBy', filter.sortBy);
-      if (filter.sortOrder) params = params.set('sortOrder', filter.sortOrder);
-    }
-
-    return this.http.get<Product[]>(this.API_URL, { params });
+  // Product methods
+  getProducts(): Observable<Product[]> {
+    return this.http.get<Product[]>(`${this.API_URL}/products`);
   }
 
   getProductById(id: number): Observable<Product> {
-    return this.http.get<Product>(`${this.API_URL}/${id}`);
+    return this.http.get<Product>(`${this.API_URL}/products/${id}`);
   }
 
-  createProduct(product: Omit<Product, 'id'>): Observable<Product> {
-    return this.http.post<Product>(this.API_URL, product);
+  createProduct(product: ProductCreateRequest): Observable<Product> {
+    return this.http.post<Product>(`${this.API_URL}/products`, product);
   }
 
-  updateProduct(id: number, product: Partial<Product>): Observable<Product> {
-    return this.http.put<Product>(`${this.API_URL}/${id}`, product);
+  updateProduct(product: ProductUpdateRequest): Observable<Product> {
+    return this.http.put<Product>(`${this.API_URL}/products/${product.id}`, product);
   }
 
   deleteProduct(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.API_URL}/${id}`);
+    return this.http.delete<void>(`${this.API_URL}/products/${id}`);
   }
 
-  getCategories(): Observable<string[]> {
-    return this.http.get<string[]>(`${this.API_URL}/categories`);
+  // Category methods
+  getCategories(): Observable<Category[]> {
+    return this.http.get<Category[]>(`${this.API_URL}/categories`);
+  }
+
+  getCategoryById(id: number): Observable<Category> {
+    return this.http.get<Category>(`${this.API_URL}/categories/${id}`);
+  }
+
+  createCategory(category: CategoryCreateRequest): Observable<Category> {
+    return this.http.post<Category>(`${this.API_URL}/categories`, category);
+  }
+
+  updateCategory(category: CategoryUpdateRequest): Observable<Category> {
+    return this.http.put<Category>(`${this.API_URL}/categories/${category.id}`, category);
+  }
+
+  deleteCategory(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.API_URL}/categories/${id}`);
+  }
+
+  // Search and filter methods
+  searchProducts(query: string): Observable<Product[]> {
+    return this.http.get<Product[]>(`${this.API_URL}/products/search?q=${query}`);
+  }
+
+  getProductsByCategory(categoryId: number): Observable<Product[]> {
+    return this.http.get<Product[]>(`${this.API_URL}/categories/${categoryId}/products`);
   }
 }

@@ -1,109 +1,161 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { Cart, CartItem, CartUpdateRequest } from '../models/cart.model';
-import { Product } from '../models/product.model';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { Cart, CartItem, CartAddItemRequest, CartUpdateItemRequest, CartRemoveItemRequest, CartSummary } from '../interfaces';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CartService {
-  private cartSubject = new BehaviorSubject<Cart>({
-    items: [],
-    total: 0,
+  private readonly API_URL = 'http://localhost:8080/api/cart';
+  private cartSubject = new BehaviorSubject<Cart | null>(null);
+  private cartSummarySubject = new BehaviorSubject<CartSummary>({
+    totalItems: 0,
+    totalAmount: 0,
     itemCount: 0
   });
 
   public cart$ = this.cartSubject.asObservable();
+  public cartSummary$ = this.cartSummarySubject.asObservable();
 
-  constructor() {
-    this.loadCartFromStorage();
+  constructor(private http: HttpClient) {
+    this.loadCart();
   }
 
-  private loadCartFromStorage(): void {
-    const cartData = localStorage.getItem('cart');
-    if (cartData) {
-      const cart = JSON.parse(cartData);
-      this.cartSubject.next(cart);
-    }
+  private loadCart(): void {
+    this.getCart().subscribe();
   }
 
-  private saveCartToStorage(cart: Cart): void {
-    localStorage.setItem('cart', JSON.stringify(cart));
+  getCart(): Observable<Cart> {
+    return this.http.get<Cart>(this.API_URL).pipe(
+      tap(cart => {
+        this.cartSubject.next(cart);
+        this.updateCartSummary(cart);
+      })
+    );
   }
 
-  private calculateCart(cart: Cart): Cart {
-    const total = cart.items.reduce((sum, item) => sum + item.subtotal, 0);
-    const itemCount = cart.items.reduce((sum, item) => sum + item.quantity, 0);
-    return { ...cart, total, itemCount };
+  addItem(request: CartAddItemRequest): Observable<Cart> {
+    return this.http.post<Cart>(`${this.API_URL}/items`, request).pipe(
+      tap(cart => {
+        this.cartSubject.next(cart);
+        this.updateCartSummary(cart);
+      })
+    );
   }
 
-  addToCart(product: Product, quantity: number = 1): void {
-    const currentCart = this.cartSubject.value;
+  updateItem(request: CartUpdateItemRequest): Observable<Cart> {
+    return this.http.put<Cart>(`${this.API_URL}/items/${request.itemId}`, request).pipe(
+      tap(cart => {
+        this.cartSubject.next(cart);
+        this.updateCartSummary(cart);
+      })
+    );
+  }
+
+  removeItem(request: CartRemoveItemRequest): Observable<Cart> {
+    return this.http.delete<Cart>(`${this.API_URL}/items/${request.itemId}`).pipe(
+      tap(cart => {
+        this.cartSubject.next(cart);
+        this.updateCartSummary(cart);
+      })
+    );
+  }
+
+  clearCart(): Observable<void> {
+    return this.http.delete<void>(this.API_URL).pipe(
+      tap(() => {
+        this.cartSubject.next(null);
+        this.cartSummarySubject.next({
+          totalItems: 0,
+          totalAmount: 0,
+          itemCount: 0
+        });
+      })
+    );
+  }
+
+  getCartItemCount(): number {
+    const cart = this.cartSubject.value;
+    return cart ? cart.totalItems : 0;
+  }
+
+  getCartTotal(): number {
+    const cart = this.cartSubject.value;
+    return cart ? cart.totalAmount : 0;
+  }
+
+  isCartEmpty(): boolean {
+    const cart = this.cartSubject.value;
+    return !cart || cart.items.length === 0;
+  }
+
+  private updateCartSummary(cart: Cart): void {
+    const summary: CartSummary = {
+      totalItems: cart.totalItems,
+      totalAmount: cart.totalAmount,
+      itemCount: cart.items.length
+    };
+    this.cartSummarySubject.next(summary);
+  }
+
+  // Local cart methods for guest users
+  addItemToLocalCart(product: any, quantity: number = 1): void {
+    const currentCart = this.cartSubject.value || { 
+      items: [], 
+      totalItems: 0, 
+      totalAmount: 0, 
+      id: 0, 
+      userId: 0, 
+      createdAt: new Date(), 
+      updatedAt: new Date() 
+    };
+    
     const existingItem = currentCart.items.find(item => item.product.id === product.id);
-
+    
     if (existingItem) {
       existingItem.quantity += quantity;
-      existingItem.subtotal = existingItem.quantity * existingItem.product.price;
+      existingItem.subtotal = existingItem.quantity * existingItem.price;
     } else {
       const newItem: CartItem = {
-        product,
-        quantity,
+        id: Date.now(),
+        product: product,
+        quantity: quantity,
+        price: product.price,
         subtotal: product.price * quantity
       };
       currentCart.items.push(newItem);
     }
-
-    const updatedCart = this.calculateCart(currentCart);
-    this.cartSubject.next(updatedCart);
-    this.saveCartToStorage(updatedCart);
-  }
-
-  updateCartItem(productId: number, quantity: number): void {
-    const currentCart = this.cartSubject.value;
-    const item = currentCart.items.find(item => item.product.id === productId);
-
-    if (item) {
-      if (quantity <= 0) {
-        this.removeFromCart(productId);
-        return;
-      }
-      item.quantity = quantity;
-      item.subtotal = item.quantity * item.product.price;
-    }
-
-    const updatedCart = this.calculateCart(currentCart);
-    this.cartSubject.next(updatedCart);
-    this.saveCartToStorage(updatedCart);
-  }
-
-  removeFromCart(productId: number): void {
-    const currentCart = this.cartSubject.value;
-    currentCart.items = currentCart.items.filter(item => item.product.id !== productId);
     
-    const updatedCart = this.calculateCart(currentCart);
-    this.cartSubject.next(updatedCart);
-    this.saveCartToStorage(updatedCart);
+    this.recalculateLocalCart(currentCart);
   }
 
-  clearCart(): void {
-    const emptyCart: Cart = {
-      items: [],
-      total: 0,
-      itemCount: 0
-    };
-    this.cartSubject.next(emptyCart);
-    this.saveCartToStorage(emptyCart);
+  removeItemFromLocalCart(itemId: number): void {
+    const currentCart = this.cartSubject.value;
+    if (!currentCart) return;
+    
+    currentCart.items = currentCart.items.filter(item => item.id !== itemId);
+    this.recalculateLocalCart(currentCart);
   }
 
-  getCart(): Cart {
-    return this.cartSubject.value;
+  updateLocalCartItem(itemId: number, quantity: number): void {
+    const currentCart = this.cartSubject.value;
+    if (!currentCart) return;
+    
+    const item = currentCart.items.find(item => item.id === itemId);
+    if (item) {
+      item.quantity = quantity;
+      item.subtotal = item.quantity * item.price;
+      this.recalculateLocalCart(currentCart);
+    }
   }
 
-  getCartItemCount(): number {
-    return this.cartSubject.value.itemCount;
-  }
-
-  getCartTotal(): number {
-    return this.cartSubject.value.total;
+  private recalculateLocalCart(cart: Cart): void {
+    cart.totalItems = cart.items.reduce((sum, item) => sum + item.quantity, 0);
+    cart.totalAmount = cart.items.reduce((sum, item) => sum + item.subtotal, 0);
+    cart.updatedAt = new Date();
+    
+    this.cartSubject.next(cart);
+    this.updateCartSummary(cart);
   }
 }

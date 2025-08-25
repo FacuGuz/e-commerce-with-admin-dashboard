@@ -1,39 +1,33 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { User } from '../../interfaces';
 
 @Component({
   selector: 'app-navbar',
-  standalone: true,
-  imports: [CommonModule, RouterModule],
   templateUrl: './navbar.component.html',
-  styleUrls: ['./navbar.component.css']
+  standalone: true,
+  imports: [CommonModule, RouterLink]
 })
-export class NavbarComponent {
-  isMenuOpen = false;
+export class NavbarComponent implements OnInit {
   isLoggedIn = false;
   userRole = '';
 
-  constructor(private authService: AuthService) {
-    this.authService.isAuthenticated$.subscribe(
-      isAuth => this.isLoggedIn = isAuth
-    );
+  constructor(public authService: AuthService) {
+    // Check authentication status on init
+    this.isLoggedIn = this.authService.isAuthenticated();
+    
+    // Subscribe to user changes
     this.authService.currentUser$.subscribe(
-      user => this.userRole = user?.role || ''
+      (user: any) => {
+        this.userRole = user?.role || '';
+        this.isLoggedIn = this.authService.isAuthenticated();
+      }
     );
   }
 
-  toggleMenu(): void {
-    this.isMenuOpen = !this.isMenuOpen;
-  }
-
-  logout(): void {
-    this.authService.logout();
-    this.isMenuOpen = false;
-  }
-
-  isAdmin(): boolean {
-    return this.userRole === 'ADMIN';
+  ngOnInit(): void {
+    // Additional initialization if needed
   }
 }

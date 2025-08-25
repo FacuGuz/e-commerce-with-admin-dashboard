@@ -90,8 +90,8 @@ CREATE TABLE IF NOT EXISTS payment (
 
 -- Insert data into `app_user`
 INSERT INTO app_user (username, password, email, role, created_at) VALUES
-                                                                       ('johndoe', 'hashed_password_1', 'john.doe@example.com', 'ADMIN', NOW()),
-                                                                       ('janesmith', 'hashed_password_2', 'jane.smith@example.com', 'USER', NOW());
+                                                                       ('johndoe', 'hashed_password_1', 'john.doe@example.com', 'ROLE_ADMIN', NOW()),
+                                                                       ('janesmith', 'hashed_password_2', 'jane.smith@example.com', 'ROLE_USER', NOW());
 
 -- Insert data into `category`
 INSERT INTO category (name) VALUES ('Electronics'), ('Apparel'), ('Home Goods');
