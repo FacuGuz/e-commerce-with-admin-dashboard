@@ -40,7 +40,7 @@ export class LoginComponent {
           this.isLoading = false;
           const user = this.authService.getCurrentUser();
           if (user && user.role === 'ADMIN') {
-            this.router.navigate(['/admin/dashboard']);
+            this.router.navigate(['/admin']);
           } else {
             this.router.navigate(['/catalog']);
           }

@@ -27,27 +27,22 @@ public class CategoryServiceImpl implements CategoryService{
             throw new RuntimeException("Category not found");
         }
         categoryRepository.deleteById(id);
-    
     }
 
     @Override
     public List<CategoryEntity> getAllCategories() {
-        if (categoryRepository.count() == 0) {
-            throw new RuntimeException("No categories found");
-        }
+        // Devolver lista vacía si no hay categorías en lugar de lanzar excepción
         return categoryRepository.findAll();
     }
 
     @Override
-        public CategoryEntity getCategoryById(Long id) {
-            return categoryRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Category not found"));
-        }
+    public CategoryEntity getCategoryById(Long id) {
+        return categoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+    }
 
     @Override
     public CategoryEntity saveCategory(CategoryEntity category) {
         return categoryRepository.save(category);
     }
-    
-    
 }

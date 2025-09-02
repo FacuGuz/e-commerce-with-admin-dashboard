@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../services/product.service';
 import { CartService } from '../../services/cart.service';
 import { Product, Category, ProductFilter } from '../../interfaces';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-catalog',
@@ -27,7 +28,8 @@ export class CatalogComponent implements OnInit {
 
   constructor(
     private productService: ProductService,
-    private cartService: CartService
+    private cartService: CartService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -106,9 +108,13 @@ export class CatalogComponent implements OnInit {
 
     // Category filter
     if (this.selectedCategories.length > 0) {
-      filtered = filtered.filter(product =>
-        this.selectedCategories.includes(product.category.id)
-      );
+      filtered = filtered.filter(product => {
+        // Verificar que el producto tenga categoría antes de acceder a su id
+        if (!product.category) {
+          return false;
+        }
+        return this.selectedCategories.includes(product.category.id);
+      });
     }
 
     // Price filter
@@ -154,12 +160,16 @@ export class CatalogComponent implements OnInit {
   addToCart(product: Product): void {
     if (product.stock > 0) {
       this.cartService.addItemToLocalCart(product, 1);
-      // You could add a toast notification here
+      this.notificationService.showSuccess(`"${product.name}" agregado al carrito`);
     }
   }
 
   toggleSortOrder(): void {
     this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
     this.applyFilters();
+  }
+
+  onImageError(event: any): void {
+    event.target.src = 'https://via.placeholder.com/300x300?text=No+Image';
   }
 }

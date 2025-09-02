@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { User, UserRole } from '../../interfaces';
 import { ProductManagementComponent } from './product-management/product-management.component';
@@ -22,14 +22,11 @@ export class AdminDashboardComponent implements OnInit {
   currentSection: 'products' | 'categories' | 'users' = 'products';
   currentUser: User | null = null;
 
-  constructor(public authService: AuthService) {}
+  constructor(public authService: AuthService, private router: Router) {}
 
   ngOnInit(): void {
     this.currentUser = this.authService.getCurrentUser();
-    if (!this.currentUser || this.currentUser.role !== UserRole.ADMIN) {
-      // Redirect to login if not admin
-      // this.router.navigate(['/login']);
-    }
+    // El guard ya verifica la autenticación y el rol de admin
   }
 
   setSection(section: 'products' | 'categories' | 'users'): void {
@@ -39,4 +36,6 @@ export class AdminDashboardComponent implements OnInit {
   isActiveSection(section: string): boolean {
     return this.currentSection === section;
   }
+
+
 }

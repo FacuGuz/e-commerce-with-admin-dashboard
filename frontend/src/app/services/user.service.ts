@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { User } from '../interfaces';
-import {UserPurchase} from '../interfaces/user/user.interface';
+import { UserPurchase } from '../interfaces/user/user.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -18,6 +18,10 @@ export class UserService {
 
   getUserById(id: number): Observable<User> {
     return this.http.get<User>(`${this.API_URL}/users/${id}`);
+  }
+
+  updateUser(id: number, userData: Partial<User>): Observable<User> {
+    return this.http.put<User>(`${this.API_URL}/users/${id}`, userData);
   }
 
   updateUserStatus(userId: number, isActive: boolean): Observable<User> {

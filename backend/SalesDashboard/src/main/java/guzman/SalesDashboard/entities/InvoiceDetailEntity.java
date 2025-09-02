@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 @Entity
+@Table(name = "invoice_detail")
 public class InvoiceDetailEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,14 +19,27 @@ public class InvoiceDetailEntity {
     @JoinColumn(name = "invoiceId")
     private InvoiceEntity invoice;
 
-    Integer quantity;
-
-    Double price;
+    private Integer quantity;
+    private Double price;
+    private Double subtotal;
+    private String productName;
+    private Long productId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "productId")
+    @JoinColumn(name = "productId", insertable = false, updatable = false)
     private ProductEntity product;
 
-
-
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((id == null) ? 0 : id.hashCode());
+        result = prime * result + ((quantity == null) ? 0 : quantity.hashCode());
+        result = prime * result + ((price == null) ? 0 : price.hashCode());
+        result = prime * result + ((subtotal == null) ? 0 : subtotal.hashCode());
+        result = prime * result + ((productName == null) ? 0 : productName.hashCode());
+        result = prime * result + ((productId == null) ? 0 : productId.hashCode());
+        // NO incluir invoice ni product para evitar ciclo infinito
+        return result;
+    }
 }

@@ -2,6 +2,9 @@ export interface User {
   id: number;
   username: string;
   email: string;
+  fullname: string;
+  phoneNumber?: string;
+  address?: string;
   role: UserRole;
   isActive: boolean;
   createdAt: Date;
@@ -17,6 +20,9 @@ export interface UserProfile {
   id: number;
   username: string;
   email: string;
+  fullname: string;
+  phoneNumber?: string;
+  address?: string;
   role: UserRole;
   isActive: boolean;
 }
@@ -36,6 +42,9 @@ export interface RegisterRequest {
   username: string;
   email: string;
   password: string;
+  fullname: string;
+  phoneNumber?: string;
+  address?: string;
 }
 
 // Backend response interface

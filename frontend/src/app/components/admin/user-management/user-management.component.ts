@@ -1,15 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { UserService } from '../../../services/user.service';
 import { User } from '../../../interfaces';
-import {UserPurchase} from '../../../interfaces/user/user.interface';
+import { UserPurchase } from '../../../interfaces/user/user.interface';
 
 @Component({
   selector: 'app-user-management',
   templateUrl: './user-management.component.html',
   standalone: true,
-  imports: [CommonModule, FormsModule]
+  imports: [CommonModule, FormsModule, ReactiveFormsModule]
 })
 export class UserManagementComponent implements OnInit {
   users: User[] = [];
@@ -19,8 +19,21 @@ export class UserManagementComponent implements OnInit {
   selectedUser: User | null = null;
   userPurchases: UserPurchase[] = [];
   showPurchases = false;
+  showEditModal = false;
+  editForm: FormGroup;
 
-  constructor(private userService: UserService) {}
+  constructor(
+    private userService: UserService,
+    private fb: FormBuilder
+  ) {
+    this.editForm = this.fb.group({
+      username: ['', [Validators.required, Validators.minLength(3)]],
+      email: ['', [Validators.required, Validators.email]],
+      fullname: ['', [Validators.required, Validators.minLength(2)]],
+      phoneNumber: [''],
+      address: ['']
+    });
+  }
 
   ngOnInit(): void {
     this.loadUsers();
@@ -47,7 +60,8 @@ export class UserManagementComponent implements OnInit {
     } else {
       this.filteredUsers = this.users.filter(user =>
         user.username.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(this.searchTerm.toLowerCase())
+        user.email.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        user.fullname.toLowerCase().includes(this.searchTerm.toLowerCase())
       );
     }
   }
@@ -75,17 +89,46 @@ export class UserManagementComponent implements OnInit {
     this.userPurchases = [];
   }
 
-  onToggleUserStatus(user: User): void {
-    const newStatus = !user.isActive;
-    this.userService.updateUserStatus(user.id, newStatus).subscribe({
-      next: () => {
-        user.isActive = newStatus;
-      },
-      error: (error) => {
-        console.error('Error updating user status:', error);
-      }
+  onEditUser(user: User): void {
+    this.selectedUser = user;
+    this.editForm.patchValue({
+      username: user.username,
+      email: user.email,
+      fullname: user.fullname,
+      phoneNumber: user.phoneNumber || '',
+      address: user.address || ''
     });
+    this.showEditModal = true;
   }
+
+  onSaveUser(): void {
+    if (this.editForm.valid && this.selectedUser) {
+      const updatedUser = this.editForm.value;
+      this.userService.updateUser(this.selectedUser.id, updatedUser).subscribe({
+        next: (user) => {
+          // Update the user in the list
+          const index = this.users.findIndex(u => u.id === user.id);
+          if (index !== -1) {
+            this.users[index] = user;
+            this.filteredUsers = [...this.users];
+          }
+          this.showEditModal = false;
+          this.selectedUser = null;
+        },
+        error: (error) => {
+          console.error('Error updating user:', error);
+        }
+      });
+    }
+  }
+
+  onCloseEditModal(): void {
+    this.showEditModal = false;
+    this.selectedUser = null;
+    this.editForm.reset();
+  }
+
+
 
   onDeleteUser(user: User): void {
     if (confirm(`¿Estás seguro de que quieres eliminar al usuario "${user.username}"?`)) {

@@ -24,28 +24,34 @@ export interface MercadoPagoPreference {
   id: string;
   initPoint: string;
   sandboxInitPoint: string;
-  items: {
-    id: string;
-    title: string;
-    quantity: number;
-    unit_price: number;
-    currency_id: string;
-    description?: string;
-    picture_url?: string;
-  }[];
-  payer: {
-    name: string;
-    email: string;
-  };
-  back_urls: {
-    success: string;
-    failure: string;
-    pending: string;
-  };
-  auto_return: string;
-  external_reference: string;
-  expires: boolean;
-  expiration_date_to: string;
+  externalReference: string;
+  clientId?: string;
+  collectorId?: string;
+  notificationUrl?: string;
+  expires?: string;
+  expirationDateFrom?: string;
+  expirationDateTo?: string;
+  dateCreated: string;
+  lastUpdated: string;
+  siteId?: string;
+  sponsorId?: string;
+  marketplace?: string;
+  marketplaceFee?: string;
+  differentialPricing?: string;
+  applicationId?: string;
+  processingModes?: string;
+  additionalInfo?: string;
+  autoReturn?: string;
+  backUrls?: string;
+  binaryMode?: string;
+  categoryId?: string;
+  collector?: string;
+  currency?: string;
+  items?: string;
+  payer?: string;
+  paymentMethods?: string;
+  shipments?: string;
+  statementDescriptor?: string;
 }
 
 export interface PaymentStatus {

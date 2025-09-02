@@ -83,22 +83,30 @@ export class AuthService {
     // Decodificar el token JWT para obtener información del usuario
     const tokenPayload = this.decodeToken(token);
     
+    console.log('AuthService - Token payload:', tokenPayload);
+    
     // Crear un objeto User básico desde el token
     const user: User = {
       id: tokenPayload.sub ? parseInt(tokenPayload.sub) : 0,
       username: tokenPayload.username || tokenPayload.email || '',
       email: tokenPayload.email || '',
+      fullname: tokenPayload.fullname || tokenPayload.username || '',
+      phoneNumber: tokenPayload.phoneNumber || undefined,
+      address: tokenPayload.address || undefined,
       role: tokenPayload.role === 'ROLE_ADMIN' ? UserRole.ADMIN : UserRole.USER,
       isActive: true,
       createdAt: new Date(),
       updatedAt: new Date()
     };
 
+    console.log('AuthService - Setting token in localStorage:', token.substring(0, 20) + '...');
     localStorage.setItem('auth_token', token);
     localStorage.setItem('current_user', JSON.stringify(user));
     
     this.tokenSubject.next(token);
     this.currentUserSubject.next(user);
+    
+    console.log('AuthService - Token stored successfully');
   }
 
   private decodeToken(token: string): any {

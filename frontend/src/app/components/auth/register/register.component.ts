@@ -26,6 +26,9 @@ export class RegisterComponent {
     this.registerForm = this.fb.group({
       username: ['', [Validators.required, Validators.minLength(3)]],
       email: ['', [Validators.required, Validators.email]],
+      fullname: ['', [Validators.required, Validators.minLength(2)]],
+      phoneNumber: [''],
+      address: [''],
       password: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', [Validators.required]],
       terms: [false, [Validators.requiredTrue]]
@@ -50,6 +53,9 @@ export class RegisterComponent {
       const registerData: RegisterRequest = {
         username: this.registerForm.get('username')?.value,
         email: this.registerForm.get('email')?.value,
+        fullname: this.registerForm.get('fullname')?.value,
+        phoneNumber: this.registerForm.get('phoneNumber')?.value || undefined,
+        address: this.registerForm.get('address')?.value || undefined,
         password: this.registerForm.get('password')?.value
       };
 

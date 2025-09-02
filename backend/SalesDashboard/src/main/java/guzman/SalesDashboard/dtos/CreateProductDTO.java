@@ -9,4 +9,5 @@ public class CreateProductDTO {
     private Double price;
     private String imagePath;
     private Long categoryId;
+    private Integer stock;
 }

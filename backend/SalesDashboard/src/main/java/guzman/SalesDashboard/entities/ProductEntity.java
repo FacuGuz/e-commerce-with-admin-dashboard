@@ -25,6 +25,7 @@ public class ProductEntity {
 
     private Integer stock;
 
+    @Column(columnDefinition = "TEXT")
     private String imagePath;
 
     @ManyToOne(fetch = FetchType.LAZY)

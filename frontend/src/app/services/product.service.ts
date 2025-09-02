@@ -13,7 +13,7 @@ export class ProductService {
 
   // Product methods
   getProducts(): Observable<Product[]> {
-    return this.http.get<Product[]>(`${this.API_URL}/products`);
+    return this.http.get<Product[]>(`${this.API_URL}/products/list`);
   }
 
   getProductById(id: number): Observable<Product> {
@@ -21,15 +21,15 @@ export class ProductService {
   }
 
   createProduct(product: ProductCreateRequest): Observable<Product> {
-    return this.http.post<Product>(`${this.API_URL}/products`, product);
+    return this.http.post<Product>(`${this.API_URL}/products/save`, product);
   }
 
   updateProduct(product: ProductUpdateRequest): Observable<Product> {
-    return this.http.put<Product>(`${this.API_URL}/products/${product.id}`, product);
+    return this.http.put<Product>(`${this.API_URL}/products/update/${product.id}`, product);
   }
 
   deleteProduct(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.API_URL}/products/${id}`);
+    return this.http.delete<void>(`${this.API_URL}/products/delete/${id}`);
   }
 
   // Category methods

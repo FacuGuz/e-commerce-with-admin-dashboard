@@ -29,16 +29,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
         String method = request.getMethod();
         
+        // Permitir solicitudes OPTIONS sin filtro
+        if ("OPTIONS".equals(method)) {
+            return true;
+        }
+        
+        // Rutas de autenticación sin filtro
         if (path.startsWith("/api/v1/auth/")) {
             return true;
         }
         
+        // Rutas públicas GET sin filtro
         if ((path.startsWith("/api/v1/categories/") || path.startsWith("/api/v1/products/")) && 
             "GET".equals(method)) {
             return true;
         }
         
-        // Todas las demás rutas pasan por el filtro JWT
+        // Todas las demás rutas (incluyendo POST, PUT, DELETE) pasan por el filtro JWT
         return false;
     }
 
@@ -46,31 +53,43 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
+        System.out.println("JWT Filter processing: " + request.getMethod() + " " + request.getRequestURI());
+        
         final String token = getTokenFromRequest(request);
-        final String userEmail;
-
+        
         if (token == null) {
+            System.out.println("No JWT token found in request");
             filterChain.doFilter(request, response);
             return;
         }
 
-        userEmail = jwtService.getEmailFromToken(token);
+        System.out.println("JWT token found: " + token.substring(0, Math.min(20, token.length())) + "...");
 
-        if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
-            if (jwtService.isTokenValid(token, userDetails)) {
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails,
-                        null,
-                        userDetails.getAuthorities());
+        try {
+            final String userEmail = jwtService.getEmailFromToken(token);
+            System.out.println("User email from token: " + userEmail);
 
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+            if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
+                if (jwtService.isTokenValid(token, userDetails)) {
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities());
+
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                    System.out.println("Authentication set for user: " + userEmail + " with authorities: " + userDetails.getAuthorities());
+                } else {
+                    System.out.println("Token is not valid for user: " + userEmail);
+                }
             }
+        } catch (Exception e) {
+            System.err.println("Error processing JWT token: " + e.getMessage());
+            e.printStackTrace();
         }
 
         filterChain.doFilter(request, response);
-
     }
 
     private String getTokenFromRequest(HttpServletRequest request) {
@@ -80,6 +99,5 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return authHeader.substring(7);
         }
         return null;
-
     }
 }

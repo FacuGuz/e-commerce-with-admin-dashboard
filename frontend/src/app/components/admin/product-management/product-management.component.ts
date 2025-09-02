@@ -84,7 +84,7 @@ export class ProductManagementComponent implements OnInit {
       stock: product.stock,
       categoryId: product.category.id
     });
-    this.imagePreview = product.imageUrl;
+    this.imagePreview = product.imagePath;
     this.showForm = true;
   }
 
@@ -104,10 +104,23 @@ export class ProductManagementComponent implements OnInit {
   onImageSelected(event: any): void {
     const file = event.target.files[0];
     if (file) {
+      // Validar el tamaño del archivo (máximo 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('El archivo es demasiado grande. El tamaño máximo es 5MB.');
+        return;
+      }
+
+      // Validar el tipo de archivo
+      if (!file.type.startsWith('image/')) {
+        alert('Por favor selecciona un archivo de imagen válido.');
+        return;
+      }
+
       this.selectedImage = file;
       const reader = new FileReader();
       reader.onload = (e: any) => {
         this.imagePreview = e.target.result;
+        console.log('Imagen cargada:', this.imagePreview!.substring(0, 50) + '...');
       };
       reader.readAsDataURL(file);
     }
@@ -116,7 +129,7 @@ export class ProductManagementComponent implements OnInit {
   onSubmit(): void {
     if (this.productForm.valid) {
       const formData = this.productForm.value;
-      
+
       if (this.isEditing && this.selectedProduct) {
         const updateRequest: ProductUpdateRequest = {
           id: this.selectedProduct.id,
@@ -126,7 +139,7 @@ export class ProductManagementComponent implements OnInit {
           stock: formData.stock,
           categoryId: formData.categoryId
         };
-        
+
         this.productService.updateProduct(updateRequest).subscribe({
           next: () => {
             this.loadProducts();
@@ -143,9 +156,9 @@ export class ProductManagementComponent implements OnInit {
           price: formData.price,
           stock: formData.stock,
           categoryId: formData.categoryId,
-          imageUrl: this.imagePreview || ''
+          imagePath: this.imagePreview || ''
         };
-        
+
         this.productService.createProduct(createRequest).subscribe({
           next: () => {
             this.loadProducts();

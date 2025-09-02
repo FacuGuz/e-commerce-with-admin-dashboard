@@ -15,3 +15,6 @@ export * from './payment/payment.interface';
 
 // Dashboard interfaces
 export * from './dashboard/dashboard.interface';
+
+// Notification interfaces
+export * from '../services/notification.service';

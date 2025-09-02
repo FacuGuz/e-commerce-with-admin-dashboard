@@ -1,18 +1,29 @@
 package guzman.SalesDashboard.exception;
 
-import lombok.Getter;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Getter
+import java.time.LocalDateTime;
+import java.util.Map;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ErrorResponse {
 
+    private LocalDateTime timestamp;
+    private int status;
+    private String error;
     private String message;
+    private String path;
+    private Map<String, String> details;
 
+    // Constructor simple para compatibilidad
     public ErrorResponse(String message) {
         this.message = message;
+        this.timestamp = LocalDateTime.now();
     }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
 }

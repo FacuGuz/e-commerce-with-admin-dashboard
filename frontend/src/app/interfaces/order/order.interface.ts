@@ -25,6 +25,14 @@ export interface OrderItem {
   subtotal: number;
 }
 
+export interface CreateOrderItem {
+  productId: number;
+  productName: string;
+  quantity: number;
+  unitPrice: number;
+  subtotal: number;
+}
+
 export interface Address {
   street: string;
   city: string;
@@ -57,7 +65,7 @@ export enum PaymentMethod {
 }
 
 export interface CreateOrderRequest {
-  items: OrderItem[];
+  items: CreateOrderItem[];
   shippingAddress: Address;
   billingAddress: Address;
   paymentMethod: PaymentMethod;

@@ -48,6 +48,9 @@ public class AuthService {
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .email(request.getEmail())
+                .fullname(request.getFullname())
+                .phoneNumber(request.getPhoneNumber())
+                .address(request.getAddress())
                 .role(Role.ROLE_USER)
                 .build();
 
@@ -71,6 +74,9 @@ public class AuthService {
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .email(request.getEmail())
+                .fullname(request.getFullname())
+                .phoneNumber(request.getPhoneNumber())
+                .address(request.getAddress())
                 .role(Role.ROLE_ADMIN) 
                 .build();
 

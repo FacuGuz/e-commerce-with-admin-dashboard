@@ -4,7 +4,7 @@ export interface Product {
   description: string;
   price: number;
   stock: number;
-  imageUrl: string;
+  imagePath: string;
   category: Category;
   isActive: boolean;
   createdAt: Date;
@@ -35,7 +35,7 @@ export interface ProductCreateRequest {
   price: number;
   stock: number;
   categoryId: number;
-  imageUrl: string;
+  imagePath: string;
 }
 
 export interface ProductUpdateRequest {
