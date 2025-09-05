@@ -69,7 +69,10 @@
          <div class="flex items-center space-x-4">
                        @if (isLoggedIn) {
               <div class="flex items-center space-x-4">
-                <span class="text-sm text-gray-300">Bienvenido, {{ user?.fullname || user?.username || 'Usuario' }}</span>
+                <div class="text-sm text-gray-300">
+                  <div>Bienvenido, {{ user?.fullname || user?.username || 'Usuario' }}</div>
+                  <div class="text-xs text-gray-400">{{ user?.email }}</div>
+                </div>
                 <button
                   (click)="authService.logout()"
                   class="text-gray-300 hover:text-white transition-colors text-sm font-medium border border-gray-600 px-3 py-1 hover:border-white">

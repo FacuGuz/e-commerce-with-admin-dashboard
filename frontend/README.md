@@ -1,59 +1,215 @@
-# Frontend
+# 🛒 SalesDashboard - E-commerce Full Stack
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.1.6.
+Un e-commerce completo hecho con **Spring Boot** y **Angular**. Tiene todo lo basico: productos, usuarios, carrito y pagos con **MercadoPago**.
 
-## Development server
+## 🚀 Que tiene
 
-To start a local development server, run:
+### Backend (Spring Boot)
+- **JWT** para login con roles de usuario y admin
+- **API REST** para productos, usuarios y ordenes
+- **MercadoPago** para los pagos
+- **PostgreSQL** con JPA/Hibernate
+- **Spring Security** para la seguridad
+- **Sistema de facturas** con estados
 
+### Frontend (Angular)
+- **Tailwind CSS** para que se vea lindo
+- **Catálogo** de productos
+- **Carrito** que se guarda
+- **Checkout** con validaciones
+- **Panel de admin** para manejar todo
+- **Guards** para proteger rutas
+- **Responsive** para celular y desktop
+
+## 🛠️ Stack tecnológico
+
+### Backend
+- **Java 17**
+- **Spring Boot 3.5.4**
+- **Spring Security** con JWT
+- **Spring Data JPA**
+- **PostgreSQL**
+- **Maven**
+- **MercadoPago SDK**
+
+### Frontend
+- **Angular 18**
+- **TypeScript**
+- **Tailwind CSS**
+- **RxJS**
+
+## ¿Que necesitas?
+
+- **Java 17** o mas nuevo
+- **Node.js 18** o mas nuevo
+- **PostgreSQL 12** o mas nuevo
+- **Maven 3.6** o mas nuevo
+- **Cuenta de MercadoPago** (para los pagos)
+
+## Como instalarlo
+
+### 1. Clonar el repo
 ```bash
-ng serve
+git clone https://github.com/tu-usuario/sales-dashboard.git
+cd sales-dashboard
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+### 2. Configurar la base de datos
+```sql
+-- Crear la base
+CREATE DATABASE sales_dashboard;
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
+-- Crear usuario (opcional)
+CREATE USER sales_user WITH PASSWORD 'tu_password';
+GRANT ALL PRIVILEGES ON DATABASE sales_dashboard TO sales_user;
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+### 3. Configurar el Backend
 
+1. Copia el archivo de config:
 ```bash
-ng generate --help
+cp backend/SalesDashboard/src/main/resources/application.properties.example backend/SalesDashboard/src/main/resources/application.properties
 ```
 
-## Building
+2. Edita `application.properties` con tus datos:
+```properties
+# Base de datos
+spring.datasource.url=jdbc:postgresql://localhost:5432/sales_dashboard
+spring.datasource.username=tu_usuario
+spring.datasource.password=tu_password
 
-To build the project run:
+# JWT Secret (genera una clave segura)
+jwt.secret.key=clave_jwt
 
-```bash
-ng build
+# MercadoPago
+mercadopago.access.token=ACCESS_TOKEN
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
+3. Ejecutar el backend:
 ```bash
-ng test
+cd backend/SalesDashboard
+./mvnw spring-boot:run
 ```
 
-## Running end-to-end tests
+### 4. Configurar el Frontend
 
-For end-to-end (e2e) testing, run:
-
+1. Instalar dependencias:
 ```bash
-ng e2e
+cd frontend
+npm install
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+2. Copia el archivo de config:
+```bash
+cp src/environments/environment.example.ts src/environments/environment.ts
+```
 
-## Additional Resources
+3. Edita `environment.ts` con tu public key de MercadoPago:
+```typescript
+export const environment = {
+  production: false,
+  apiUrl: 'http://localhost:8080/api',
+  mercadopago: {
+    publicKey: 'PUBLIC_KEY'
+  }
+};
+```
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+4. Ejecutar el frontend:
+```bash
+npm start
+```
+
+## ¿Que hace?
+
+### Para Usuarios
+- ✅ **Registro y login** con validaciones
+- ✅ **Catálogo** de productos con filtros
+- ✅ **Carrito** que se guarda
+- ✅ **Checkout** con autocompletado
+- ✅ **Pagos** con MercadoPago
+- ✅ **Historial** de compras
+
+### Para Admins
+- ✅ **Panel de admin** completo
+- ✅ **CRUD** de productos
+- ✅ **Gestión** de usuarios con roles
+- ✅ **Ver compras** por usuario
+- ✅ **Estados** de ordenes (PENDING, PAID, FAILED)
+
+## Seguridad
+
+- **JWT** para autenticacion
+- **Roles** USER/ADMIN
+- **Validaciones** en frontend y backend
+- **CORS** configurado
+- **Rutas protegidas**
+
+
+## 🚀 Deploy
+
+### Backend (Heroku/Railway)
+```bash
+# Variables de entorno
+DATABASE_URL=postgresql://...
+JWT_SECRET=tu_clave_secreta
+MERCADOPAGO_ACCESS_TOKEN=tu_token
+```
+
+### Frontend (Vercel/Netlify)
+```bash
+# Variables de entorno
+API_URL=https://tu-backend.herokuapp.com/api
+MERCADOPAGO_PUBLIC_KEY=tu_public_key
+```
+
+## 📊 Estructura
+
+```
+sales-dashboard/
+├── backend/
+│   └── SalesDashboard/
+│       ├── src/main/java/guzman/SalesDashboard/
+│       │   ├── controllers/     # REST endpoints
+│       │   ├── services/        # Logica de negocio
+│       │   ├── entities/        # Entidades JPA
+│       │   ├── repositories/    # Repositorios
+│       │   ├── dtos/           # DTOs
+│       │   ├── config/         # Configuraciones
+│       │   └── Auth/           # JWT
+│       └── src/main/resources/
+│           └── application.properties
+├── frontend/
+│   └── src/
+│       ├── app/
+│       │   ├── components/     # Componentes Angular
+│       │   ├── services/       # Servicios HTTP
+│       │   ├── interfaces/     # Interfaces TS
+│       │   ├── guards/         # Guards
+│       │   └── interceptors/   # Interceptors
+│       └── environments/       # Configs
+└── README.md
+```
+
+## Contribuciones
+
+Si queres contribuir:
+
+1. Fork el proyecto
+2. Crea una rama (`git checkout -b feature/nueva-feature`)
+3. Commit (`git commit -m 'Agregar nueva feature'`)
+4. Push (`git push origin feature/nueva-feature`)
+5. Abre un PR
+
+## 🚧 Proximos cambios
+
+- [ ] **Sistema de notificaciones** en tiempo real
+- [ ] **Dashboard de metricas** para admins (ingresos, productos mas vendidos)
+- [ ] **Integracion con WhatsApp** para notificaciones
+- [ ] **Modo oscuro** en el frontend
+- [ ] **Tests unitarios** y de integracion
+- [ ] **Docker** para deployment
+
+
+
+⭐ **Si te gusta, deja una estrella!** ⭐

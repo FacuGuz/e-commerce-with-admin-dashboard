@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import {Router, RouterLink} from '@angular/router';
 import { CartService } from '../../services/cart.service';
 import { CartItem } from '../../interfaces';
 
@@ -8,14 +8,13 @@ import { CartItem } from '../../interfaces';
   selector: 'app-cart',
   templateUrl: './cart.component.html',
   standalone: true,
-  imports: [CommonModule]
+  imports: [CommonModule, RouterLink]
 })
 export class CartComponent implements OnInit {
   cartItems: CartItem[] = [];
   total = 0;
   subtotal = 0;
   shipping = 0;
-  taxes = 0;
 
   constructor(
     private cartService: CartService,
@@ -34,8 +33,7 @@ export class CartComponent implements OnInit {
   calculateTotals(): void {
     this.subtotal = this.cartItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
     this.shipping = this.subtotal > 50 ? 0 : 10; // Free shipping over $50
-    this.taxes = this.subtotal * 0.21; // 21% tax rate
-    this.total = this.subtotal + this.shipping + this.taxes;
+    this.total = this.subtotal + this.shipping;
   }
 
   increaseQuantity(item: CartItem): void {

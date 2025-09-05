@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { PaymentRequest, PaymentResponse, MercadoPagoPreference, PaymentStatus } from '../interfaces';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PaymentService {
-  private readonly API_URL = 'http://localhost:8080/api/payments';
+  private readonly API_URL = `${environment.apiUrl}/payments`;
 
   constructor(private http: HttpClient) { }
 
@@ -21,6 +22,7 @@ export class PaymentService {
     payer: { name: string; email: string };
     totalAmount: number;
   }): Observable<MercadoPagoPreference> {
+    console.log('Creating MercadoPago preference with data:', orderData);
     return this.http.post<MercadoPagoPreference>(`${this.API_URL}/mercadopago/preference`, orderData);
   }
 
@@ -77,5 +79,10 @@ export class PaymentService {
       params: { format },
       responseType: 'blob'
     });
+  }
+
+  // Método para obtener la clave pública de MercadoPago
+  getMercadoPagoPublicKey(): string {
+    return environment.mercadopago.publicKey;
   }
 }

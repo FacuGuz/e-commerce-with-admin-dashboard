@@ -29,8 +29,13 @@ public class AuthService {
         UserDetails userDetails = userRepository.findByEmail(request.getEmail()).orElseThrow();
         
         // Creamos claims personalizados para el token
+        UserEntity user = userRepository.findByEmail(request.getEmail()).orElseThrow();
         Map<String, Object> extraClaims = new HashMap<>();
         extraClaims.put("role", userDetails.getAuthorities().stream().findFirst().get().getAuthority());
+        extraClaims.put("username", user.getUsername());
+        extraClaims.put("fullname", user.getFullname());
+        extraClaims.put("phoneNumber", user.getPhoneNumber());
+        extraClaims.put("address", user.getAddress());
         
         String token = jwtService.getToken(extraClaims, userDetails);
         return AuthResponse.builder()
@@ -56,9 +61,13 @@ public class AuthService {
 
         userRepository.save(user);
 
-        // Pasamos el rol al generar el token para el usuario registrado
+        // Pasamos todos los campos al generar el token para el usuario registrado
         Map<String, Object> extraClaims = new HashMap<>();
         extraClaims.put("role", user.getRole().name());
+        extraClaims.put("username", user.getUsername());
+        extraClaims.put("fullname", user.getFullname());
+        extraClaims.put("phoneNumber", user.getPhoneNumber());
+        extraClaims.put("address", user.getAddress());
 
         return AuthResponse.builder()
                 .token(jwtService.getToken(extraClaims, user))
@@ -82,9 +91,13 @@ public class AuthService {
 
         userRepository.save(user);
 
-        // Pasamos el rol al generar el token para el administrador registrado
+        // Pasamos todos los campos al generar el token para el administrador registrado
         Map<String, Object> extraClaims = new HashMap<>();
         extraClaims.put("role", user.getRole().name());
+        extraClaims.put("username", user.getUsername());
+        extraClaims.put("fullname", user.getFullname());
+        extraClaims.put("phoneNumber", user.getPhoneNumber());
+        extraClaims.put("address", user.getAddress());
 
         return AuthResponse.builder()
                 .token(jwtService.getToken(extraClaims, user))

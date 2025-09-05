@@ -78,7 +78,7 @@ export class UserManagementComponent implements OnInit {
         this.userPurchases = purchases;
       },
       error: (error) => {
-        console.error('Error loading user purchases:', error);
+        console.error('Error cargando compras:', error);
       }
     });
   }
@@ -88,6 +88,39 @@ export class UserManagementComponent implements OnInit {
     this.selectedUser = null;
     this.userPurchases = [];
   }
+
+  getStatusClass(status: string): string {
+    switch (status?.toUpperCase()) {
+      case 'PENDING':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'PAID':
+      case 'COMPLETED':
+        return 'bg-green-100 text-green-800';
+      case 'FAILED':
+        return 'bg-red-100 text-red-800';
+      case 'REFUNDED':
+        return 'bg-blue-100 text-blue-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  }
+
+  getStatusText(status: string): string {
+    switch (status?.toUpperCase()) {
+      case 'PENDING':
+        return 'Pendiente';
+      case 'PAID':
+      case 'COMPLETED':
+        return 'Pagado';
+      case 'FAILED':
+        return 'Fallido';
+      case 'REFUNDED':
+        return 'Reembolsado';
+      default:
+        return status || 'Desconocido';
+    }
+  }
+
 
   onEditUser(user: User): void {
     this.selectedUser = user;

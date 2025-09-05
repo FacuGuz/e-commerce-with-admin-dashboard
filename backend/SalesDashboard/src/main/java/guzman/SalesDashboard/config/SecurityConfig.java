@@ -34,6 +34,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/products/**").permitAll()
                         .requestMatchers("/api/cart/**").permitAll()
                         
+                        // Permitir guest orders sin autenticación
+                        .requestMatchers(HttpMethod.POST, "/api/orders/guest").permitAll()
+                        
+                        // Permitir MercadoPago preference sin autenticación
+                        .requestMatchers(HttpMethod.POST, "/api/payments/mercadopago/preference").permitAll()
+                        
                         .requestMatchers("/api/v1/users/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/v1/categories/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/categories/**").hasRole("ADMIN")

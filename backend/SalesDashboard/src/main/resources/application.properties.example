@@ -1,0 +1,54 @@
+# ===================== CONFIGURACIÓN DE EJEMPLO =====================
+# Copia este archivo como application.properties y configura tus valores
+
+spring.application.name=SalesDashboard
+# ===================== SERVER =====================
+server.port=8080
+
+# ===================== DATABASE =====================
+# Configura tu base de datos PostgreSQL
+spring.datasource.url=jdbc:postgresql://localhost:5432/tu_base_de_datos
+spring.datasource.driver-class-name=org.postgresql.Driver
+spring.datasource.username=tu_usuario
+spring.datasource.password=tu_password
+
+# Configuración de Hibernate
+spring.jpa.hibernate.ddl-auto=none
+spring.jpa.hibernate.ddl-auto-validate=false
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+spring.sql.init.mode=never
+spring.sql.init.continue-on-error=true
+
+# ===================== SECURITY (JWT) =====================
+logging.level.org.springframework.security=DEBUG
+# Genera tu propia clave secreta JWT
+jwt.secret.key=tu_clave_secreta_jwt_muy_larga_y_segura
+
+# ===================== KAFKA =====================
+spring.kafka.bootstrap-servers=localhost:9092
+# Producer
+spring.kafka.producer.key-serializer=org.apache.kafka.common.serialization.StringSerializer
+spring.kafka.producer.value-serializer=org.apache.kafka.common.serialization.StringSerializer
+# Consumer
+spring.kafka.consumer.group-id=tienda-consumer-group
+spring.kafka.consumer.key-deserializer=org.apache.kafka.common.serialization.StringDeserializer
+spring.kafka.consumer.value-deserializer=org.apache.kafka.common.serialization.StringDeserializer
+
+# JPA
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+
+# ===================== JACKSON (JSON) =====================
+# Configuración de fechas para Jackson
+spring.jackson.serialization.write-dates-as-timestamps=false
+spring.jackson.date-format=yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+spring.jackson.time-zone=UTC
+
+# ===================== MERCADOPAGO =====================
+# Configura tus credenciales de MercadoPago
+mercadopago.access.token=TU_ACCESS_TOKEN_DE_MERCADOPAGO
+mercadopago.sandbox.enabled=true
+# URLs de retorno (configurar según tu dominio)
+mercadopago.success.url=http://localhost:4200/checkout/success
+mercadopago.failure.url=http://localhost:4200/checkout/failure
+mercadopago.pending.url=http://localhost:4200/checkout/pending

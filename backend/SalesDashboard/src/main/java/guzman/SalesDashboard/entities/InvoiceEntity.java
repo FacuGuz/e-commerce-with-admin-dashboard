@@ -53,8 +53,9 @@ public class InvoiceEntity {
     })
     private Address billingAddress;
 
-    @Enumerated(EnumType.STRING)
-    private PaymentMethod paymentMethod;
+    // Cambiado de enum a String para evitar restricciones de BD
+    @Column(name = "payment_method", length = 50)
+    private String paymentMethod;
 
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus;
@@ -85,8 +86,13 @@ public class InvoiceEntity {
         PENDING, PAID, FAILED, REFUNDED
     }
 
-    public enum PaymentMethod {
-        CREDIT_CARD, DEBIT_CARD, BANK_TRANSFER, CASH
+    // Constantes para métodos de pago (ahora que es String)
+    public static final class PaymentMethods {
+        public static final String CREDIT_CARD = "CREDIT_CARD";
+        public static final String DEBIT_CARD = "DEBIT_CARD";
+        public static final String BANK_TRANSFER = "BANK_TRANSFER";
+        public static final String CASH = "CASH";
+        public static final String MERCADOPAGO = "MERCADOPAGO";
     }
 
     @Override

@@ -23,8 +23,28 @@ export class AuthService {
     const user = localStorage.getItem('current_user');
     
     if (token && user) {
-      this.tokenSubject.next(token);
-      this.currentUserSubject.next(JSON.parse(user));
+      // Verificar que el token no este expirado antes de restaurarlo
+      if (this.isTokenValid(token)) {
+        this.tokenSubject.next(token);
+        this.currentUserSubject.next(JSON.parse(user));
+      } else {
+        // Token expirado, limpiar todo
+        this.clearAllAuth();
+      }
+    }
+  }
+
+  private isTokenValid(token: string): boolean {
+    try {
+      const payload = this.decodeToken(token);
+      if (!payload.exp) return false;
+      
+      // Verificar si el token ha expirado (exp esta en segundos)
+      const currentTime = Math.floor(Date.now() / 1000);
+      return payload.exp > currentTime;
+    } catch (error) {
+      console.error('Error validating token:', error);
+      return false;
     }
   }
 
@@ -45,6 +65,14 @@ export class AuthService {
   }
 
   logout(): void {
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('current_user');
+    localStorage.removeItem('refresh_token');
+    this.currentUserSubject.next(null);
+    this.tokenSubject.next(null);
+  }
+
+  private clearAllAuth(): void {
     localStorage.removeItem('auth_token');
     localStorage.removeItem('current_user');
     localStorage.removeItem('refresh_token');
@@ -80,17 +108,14 @@ export class AuthService {
   }
 
   private setAuthFromToken(token: string): void {
-    // Decodificar el token JWT para obtener información del usuario
+    // Decodificar el token JWT para obtener informacion del usuario
     const tokenPayload = this.decodeToken(token);
     
-    console.log('AuthService - Token payload:', tokenPayload);
-    
-    // Crear un objeto User básico desde el token
     const user: User = {
       id: tokenPayload.sub ? parseInt(tokenPayload.sub) : 0,
       username: tokenPayload.username || tokenPayload.email || '',
       email: tokenPayload.email || '',
-      fullname: tokenPayload.fullname || tokenPayload.username || '',
+      fullname: tokenPayload.fullname || tokenPayload.name || tokenPayload.username || tokenPayload.email || 'Usuario',
       phoneNumber: tokenPayload.phoneNumber || undefined,
       address: tokenPayload.address || undefined,
       role: tokenPayload.role === 'ROLE_ADMIN' ? UserRole.ADMIN : UserRole.USER,
@@ -98,15 +123,13 @@ export class AuthService {
       createdAt: new Date(),
       updatedAt: new Date()
     };
-
-    console.log('AuthService - Setting token in localStorage:', token.substring(0, 20) + '...');
+    
     localStorage.setItem('auth_token', token);
     localStorage.setItem('current_user', JSON.stringify(user));
     
     this.tokenSubject.next(token);
     this.currentUserSubject.next(user);
     
-    console.log('AuthService - Token stored successfully');
   }
 
   private decodeToken(token: string): any {

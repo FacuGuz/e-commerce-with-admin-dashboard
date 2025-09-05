@@ -5,7 +5,6 @@ export interface Order {
   status: OrderStatus;
   items: OrderItem[];
   subtotal: number;
-  tax: number;
   shipping: number;
   total: number;
   shippingAddress: Address;
@@ -61,7 +60,8 @@ export enum PaymentMethod {
   CREDIT_CARD = 'CREDIT_CARD',
   DEBIT_CARD = 'DEBIT_CARD',
   BANK_TRANSFER = 'BANK_TRANSFER',
-  CASH = 'CASH'
+  CASH = 'CASH',
+  MERCADOPAGO = 'MERCADOPAGO'
 }
 
 export interface CreateOrderRequest {

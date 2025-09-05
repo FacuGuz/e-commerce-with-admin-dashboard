@@ -9,15 +9,15 @@
     @if (cartItems.length === 0) {
       <!-- Empty Cart -->
       <div class="bg-white rounded-2xl shadow-lg p-12 text-center">
-        <div class="w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6">
+        <div class="w-24 h-24 bg-black rounded-full flex items-center justify-center mx-auto mb-6">
           <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
           </svg>
         </div>
         <h2 class="text-2xl font-bold text-gray-900 mb-4">Tu carrito está vacío</h2>
-        <p class="text-gray-600 mb-8">Agrega algunos productos para comenzar a comprar</p>
-        <a routerLink="/catalog" 
-           class="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-105">
+        <p class="text-gray-600 mb-8 font-italic">Agrega algunos productos para comenzar a comprar</p>
+        <a routerLink="/catalog"
+           class="inline-flex items-center justify-center px-8 py-4 bg-gray-700 text-white font-semibold rounded-xl  transition-all duration-200 transform hover:scale-105">
           <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
           </svg>
@@ -32,33 +32,33 @@
             <div class="p-6 border-b border-gray-200">
               <h2 class="text-xl font-semibold text-gray-900">Productos ({{ cartItems.length }})</h2>
             </div>
-            
+
             <div class="divide-y divide-gray-200">
               @for (item of cartItems; track item.id) {
                 <div class="p-6">
                   <div class="flex items-center space-x-4">
                     <!-- Product Image -->
                     <div class="flex-shrink-0">
-                      <img 
-                        [src]="item.product.imagePath || 'https://images.unsplash.com/photo-1526738549149-8e07eca6c147?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80'" 
+                      <img
+                        [src]="item.product.imagePath || 'https://images.unsplash.com/photo-1526738549149-8e07eca6c147?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80'"
                         [alt]="item.product.name"
                         class="w-20 h-20 object-cover rounded-xl"
                       />
                     </div>
-                    
+
                     <!-- Product Info -->
                     <div class="flex-1 min-w-0">
                       <h3 class="text-lg font-semibold text-gray-900 mb-1">{{ item.product.name }}</h3>
-                      <p class="text-sm text-gray-600 mb-2">{{ item.product.category?.name || 'Sin categoría' }}</p>
+                      <p class="text-sm text-gray-600 mb-2">{{ item.product.category.name || 'Sin categoría' }}</p>
                       <div class="flex items-center space-x-4">
                         <span class="text-lg font-bold text-gray-900">${{ item.product.price }}</span>
                         <span class="text-sm text-gray-500">Stock: {{ item.product.stock }}</span>
                       </div>
                     </div>
-                    
+
                     <!-- Quantity Controls -->
                     <div class="flex items-center space-x-2">
-                      <button 
+                      <button
                         (click)="decreaseQuantity(item)"
                         [disabled]="item.quantity <= 1"
                         class="w-8 h-8 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center">
@@ -67,7 +67,7 @@
                         </svg>
                       </button>
                       <span class="w-12 text-center font-semibold text-gray-900">{{ item.quantity }}</span>
-                      <button 
+                      <button
                         (click)="increaseQuantity(item)"
                         [disabled]="item.quantity >= item.product.stock"
                         class="w-8 h-8 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center">
@@ -76,9 +76,9 @@
                         </svg>
                       </button>
                     </div>
-                    
+
                     <!-- Remove Button -->
-                    <button 
+                    <button
                       (click)="removeFromCart(item)"
                       class="text-red-500 hover:text-red-700 transition-colors">
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -91,12 +91,12 @@
             </div>
           </div>
         </div>
-        
+
         <!-- Order Summary -->
         <div class="lg:col-span-1">
           <div class="bg-white rounded-2xl shadow-lg p-6 sticky top-4">
             <h2 class="text-xl font-semibold text-gray-900 mb-6">Resumen del Pedido</h2>
-            
+
             <div class="space-y-4 mb-6">
               <div class="flex justify-between text-gray-600">
                 <span>Subtotal</span>
@@ -106,10 +106,6 @@
                 <span>Envío</span>
                 <span>${{ shipping.toFixed(2) }}</span>
               </div>
-              <div class="flex justify-between text-gray-600">
-                <span>Impuestos</span>
-                <span>${{ taxes.toFixed(2) }}</span>
-              </div>
               <div class="border-t border-gray-200 pt-4">
                 <div class="flex justify-between text-lg font-bold text-gray-900">
                   <span>Total</span>
@@ -117,14 +113,14 @@
                 </div>
               </div>
             </div>
-            
-            <button 
+
+            <button
               (click)="proceedToCheckout()"
-              class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-4 px-6 rounded-xl font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 mb-4">
+              class="w-full bg-gradient-to-r from-red-600 to-gray-600 text-white py-4 px-6 rounded-xl font-semibold hover:from-red-600  hover:to-gray-700 transition-all duration-200 transform hover:scale-105 mb-4">
               Proceder al Pago
             </button>
-            
-            <button 
+
+            <button
               routerLink="/catalog"
               class="w-full bg-gray-100 text-gray-700 py-3 px-6 rounded-xl font-semibold hover:bg-gray-200 transition-colors">
               Continuar Comprando

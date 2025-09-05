@@ -7,7 +7,9 @@ import { CartService } from '../../services/cart.service';
 import { OrderService } from '../../services/order.service';
 import { PaymentService } from '../../services/payment.service';
 import { AuthService } from '../../services/auth.service';
-import { Cart, CartItem, CreateOrderRequest, Address, PaymentMethod, MercadoPagoPreference } from '../../interfaces';
+import { Cart, CartItem, CreateOrderRequest, Address, PaymentMethod, MercadoPagoPreference, Order } from '../../interfaces';
+
+declare var MercadoPago: any;
 
 @Component({
   selector: 'app-checkout',
@@ -21,6 +23,9 @@ export class CheckoutComponent implements OnInit {
   isLoading = false;
   isProcessingPayment = false;
   paymentUrl: string | null = null;
+  showMercadoPagoButton = false;
+  preferenceId: string | null = null;
+  showMercadoPagoBricks = false;
 
   constructor(
     private cartService: CartService,
@@ -32,34 +37,23 @@ export class CheckoutComponent implements OnInit {
     private fb: FormBuilder
   ) {
     this.checkoutForm = this.fb.group({
-      // Shipping Address
-      shippingStreet: ['', Validators.required],
-      shippingCity: ['', Validators.required],
-      shippingState: ['', Validators.required],
-      shippingZipCode: ['', Validators.required],
-      shippingCountry: ['Argentina', Validators.required],
-      
-      // Billing Address (same as shipping by default)
-      billingStreet: ['', Validators.required],
-      billingCity: ['', Validators.required],
-      billingState: ['', Validators.required],
-      billingZipCode: ['', Validators.required],
-      billingCountry: ['Argentina', Validators.required],
-      
-      // Contact Information
+      // Informacion basica del cliente
+      fullName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       phone: ['', Validators.required],
       
-      // Payment Method
-      paymentMethod: [PaymentMethod.CREDIT_CARD, Validators.required],
+      // Direccion de envio simplificada
+      address: ['', Validators.required],
+      city: ['', Validators.required],
+      zipCode: ['', Validators.required],
       
-      // Terms and conditions
+      // Terminos y condiciones
       acceptTerms: [false, Validators.requiredTrue]
     });
   }
 
   ngOnInit(): void {
-    // Subscribe to cart changes
+    // Suscribirse a cambios del carrito
     this.cartService.cart$.subscribe(cart => {
       this.cart = cart;
       if (!cart || cart.items.length === 0) {
@@ -67,20 +61,24 @@ export class CheckoutComponent implements OnInit {
         return;
       }
       
-      // Pre-fill form with user data if logged in
+      // Pre-llenar formulario con datos del usuario si esta logueado
       if (this.authService.isAuthenticated()) {
         const user = this.authService.getCurrentUser();
         if (user) {
+          console.log('Checkout - User data for autocomplete:', user);
           this.checkoutForm.patchValue({
-            email: user.email || ''
-            // Note: user.address is a string, not an object with street, city, etc.
-            // Address fields will remain empty for user to fill
+            fullName: user.fullname || '',
+            email: user.email || '',
+            phone: user.phoneNumber || '',
+            // No autocompletar direccion, ciudad y codigo postal
+            // para que el usuario los complete manualmente
           });
+          console.log('Checkout - Form values after patch:', this.checkoutForm.value);
         }
       }
     });
 
-    // Check for payment success/failure from URL params
+    // Verificar parametros de retorno de pago
     this.route.queryParams.subscribe(params => {
       if (params['payment_id'] && params['status']) {
         this.handlePaymentReturn(params['payment_id'], params['status']);
@@ -88,26 +86,14 @@ export class CheckoutComponent implements OnInit {
     });
   }
 
-  copyShippingToBilling(): void {
-    const shippingValues = {
-      billingStreet: this.checkoutForm.get('shippingStreet')?.value,
-      billingCity: this.checkoutForm.get('shippingCity')?.value,
-      billingState: this.checkoutForm.get('shippingState')?.value,
-      billingZipCode: this.checkoutForm.get('shippingZipCode')?.value,
-      billingCountry: this.checkoutForm.get('shippingCountry')?.value
-    };
-    this.checkoutForm.patchValue(shippingValues);
-  }
-
-  calculateTotals(): { subtotal: number; shipping: number; tax: number; total: number } {
-    if (!this.cart) return { subtotal: 0, shipping: 0, tax: 0, total: 0 };
+  calculateTotals(): { subtotal: number; shipping: number; total: number } {
+    if (!this.cart) return { subtotal: 0, shipping: 0, total: 0 };
     
     const subtotal = this.cart.items.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
-    const shipping = subtotal > 50 ? 0 : 10; // Free shipping over $50
-    const tax = subtotal * 0.21; // 21% tax rate
-    const total = subtotal + shipping + tax;
+    const shipping = subtotal > 50 ? 0 : 10; // Envio gratis sobre $50
+    const total = subtotal + shipping;
     
-    return { subtotal, shipping, tax, total };
+    return { subtotal, shipping, total };
   }
 
   async proceedToPayment(): Promise<void> {
@@ -119,7 +105,7 @@ export class CheckoutComponent implements OnInit {
     this.isLoading = true;
     
     try {
-      // Create order first
+      // Crear orden primero
       const orderData: CreateOrderRequest = {
         items: this.cart!.items.map(item => ({
           productId: item.product.id,
@@ -129,50 +115,36 @@ export class CheckoutComponent implements OnInit {
           subtotal: item.subtotal
         })),
         shippingAddress: {
-          street: this.checkoutForm.get('shippingStreet')?.value,
-          city: this.checkoutForm.get('shippingCity')?.value,
-          state: this.checkoutForm.get('shippingState')?.value,
-          zipCode: this.checkoutForm.get('shippingZipCode')?.value,
-          country: this.checkoutForm.get('shippingCountry')?.value
+          street: this.checkoutForm.get('address')?.value,
+          city: this.checkoutForm.get('city')?.value,
+          state: 'Buenos Aires', // Por defecto para simplificar
+          zipCode: this.checkoutForm.get('zipCode')?.value,
+          country: 'Argentina'
         },
         billingAddress: {
-          street: this.checkoutForm.get('billingStreet')?.value,
-          city: this.checkoutForm.get('billingCity')?.value,
-          state: this.checkoutForm.get('billingState')?.value,
-          zipCode: this.checkoutForm.get('billingZipCode')?.value,
-          country: this.checkoutForm.get('billingCountry')?.value
+          street: this.checkoutForm.get('address')?.value,
+          city: this.checkoutForm.get('city')?.value,
+          state: 'Buenos Aires', // Por defecto para simplificar
+          zipCode: this.checkoutForm.get('zipCode')?.value,
+          country: 'Argentina'
         },
-        paymentMethod: this.checkoutForm.get('paymentMethod')?.value.toString()
+        paymentMethod: PaymentMethod.MERCADOPAGO
       };
 
-      // Log para debuggear
-      console.log('=== FRONTEND ORDER DATA ===');
-      console.log('Order Data:', orderData);
-      console.log('Payment Method Value:', this.checkoutForm.get('paymentMethod')?.value);
-      console.log('Payment Method Type:', typeof this.checkoutForm.get('paymentMethod')?.value);
-      console.log('Cart Items:', this.cart?.items);
-      console.log('Form Values:', {
-        shippingStreet: this.checkoutForm.get('shippingStreet')?.value,
-        shippingCity: this.checkoutForm.get('shippingCity')?.value,
-        shippingState: this.checkoutForm.get('shippingState')?.value,
-        shippingZipCode: this.checkoutForm.get('shippingZipCode')?.value,
-        shippingCountry: this.checkoutForm.get('shippingCountry')?.value,
-        billingStreet: this.checkoutForm.get('billingStreet')?.value,
-        billingCity: this.checkoutForm.get('billingCity')?.value,
-        billingState: this.checkoutForm.get('billingState')?.value,
-        billingZipCode: this.checkoutForm.get('billingZipCode')?.value,
-        billingCountry: this.checkoutForm.get('billingCountry')?.value,
-        paymentMethod: this.checkoutForm.get('paymentMethod')?.value
-      });
-      console.log('==========================');
-
-      const order = await firstValueFrom(this.orderService.createOrder(orderData));
+      const isAuthenticated = this.authService.isAuthenticated();
+      let order: Order;
+      
+      if (isAuthenticated) {
+        order = await firstValueFrom(this.orderService.createOrder(orderData));
+      } else {
+        order = await firstValueFrom(this.orderService.createGuestOrder(orderData));
+      }
       
       if (!order) {
-        throw new Error('Failed to create order');
+        throw new Error('Error al crear la orden');
       }
 
-      // Create MercadoPago preference
+      // Crear preferencia de MercadoPago
       const totals = this.calculateTotals();
       const preferenceData = {
         orderId: order.id,
@@ -182,50 +154,103 @@ export class CheckoutComponent implements OnInit {
           quantity: item.quantity,
           unit_price: item.product.price,
           currency_id: 'ARS',
-          description: item.product.description,
-          picture_url: item.product.imagePath
+          description: item.product.description || item.product.name,
+          picture_url: item.product.imagePath || 'https://via.placeholder.com/150x150?text=Producto'
         })),
         payer: {
-          name: this.authService.getCurrentUser()?.fullname || 'Cliente',
+          name: this.checkoutForm.get('fullName')?.value,
           email: this.checkoutForm.get('email')?.value
         },
         totalAmount: totals.total
       };
 
+      console.log('Creando preferencia de MercadoPago:', preferenceData);
+
       const preference = await firstValueFrom(this.paymentService.createMercadoPagoPreference(preferenceData));
       
       if (!preference) {
-        throw new Error('Failed to create payment preference');
+        throw new Error('Error al crear la preferencia de pago');
       }
 
-      // Log para debuggear la respuesta de MercadoPago
-      console.log('=== MERCADOPAGO PREFERENCE RESPONSE ===');
-      console.log('Preference:', preference);
-      console.log('Init Point:', preference.initPoint);
-      console.log('Sandbox Init Point:', preference.sandboxInitPoint);
-      console.log('=====================================');
+      console.log('Preferencia creada:', preference);
 
-      // Redirect to MercadoPago (ahora es una URL simulada)
-      this.paymentUrl = preference.initPoint;
-      console.log('Redirecting to:', this.paymentUrl);
-      window.location.href = this.paymentUrl;
+      // Mostrar Checkout Bricks de MercadoPago
+      this.preferenceId = preference.id;
+      this.showMercadoPagoBricks = true;
+      
+      // Renderizar los Checkout Bricks despues de un pequeño delay para asegurar que el DOM este listo
+      setTimeout(() => {
+        this.renderMercadoPagoBricks(preference.id);
+      }, 100);
       
     } catch (error) {
-      console.error('Error during checkout:', error);
-      alert('Error durante el proceso de checkout. Por favor, inténtalo de nuevo.');
+      console.error('Error durante el checkout:', error);
+      alert('Error durante el proceso de checkout. Por favor, intentalo de nuevo.');
     } finally {
       this.isLoading = false;
     }
   }
 
+  private renderMercadoPagoBricks(preferenceId: string): void {
+    try {
+      if (typeof MercadoPago === 'undefined') {
+        console.error('MercadoPago SDK no esta disponible');
+        return;
+      }
+
+      // Inicializar MercadoPago
+      const mp = new MercadoPago(this.paymentService.getMercadoPagoPublicKey());
+      
+      // Crear el Brick de Wallet (billetera)
+      const wallet = mp.bricks().create('wallet', 'mercadopago-checkout', {
+        initialization: {
+          preferenceId: preferenceId
+        },
+        callbacks: {
+          onReady: () => {
+            console.log('Wallet Brick listo');
+          },
+          onSubmit: (cardFormData: any) => {
+            console.log('Formulario enviado:', cardFormData);
+          },
+          onError: (error: any) => {
+            console.error('Error en Wallet Brick:', error);
+          }
+        }
+      });
+
+      // Crear el Brick de Payment (pago con tarjeta)
+      const payment = mp.bricks().create('payment', 'mercadopago-checkout', {
+        initialization: {
+          preferenceId: preferenceId
+        },
+        callbacks: {
+          onReady: () => {
+            console.log('Payment Brick listo');
+          },
+          onSubmit: (cardFormData: any) => {
+            console.log('Formulario de pago enviado:', cardFormData);
+          },
+          onError: (error: any) => {
+            console.error('Error en Payment Brick:', error);
+          }
+        }
+      });
+
+      
+    } catch (error) {
+      console.error('Error al renderizar Checkout Bricks:', error);
+    }
+  }
+
   private handlePaymentReturn(paymentId: string, status: string): void {
     if (status === 'approved') {
-      // Payment successful - redirect to success page
+      // Pago exitoso - redirigir a pagina de exito
       this.router.navigate(['/checkout/success'], { 
         queryParams: { payment_id: paymentId, status: status } 
       });
     } else if (status === 'rejected') {
-      // Payment failed - redirect to failure page
+      // Pago fallido - redirigir a pagina de fallo
       this.router.navigate(['/checkout/failure'], { 
         queryParams: { payment_id: paymentId, status: status } 
       });

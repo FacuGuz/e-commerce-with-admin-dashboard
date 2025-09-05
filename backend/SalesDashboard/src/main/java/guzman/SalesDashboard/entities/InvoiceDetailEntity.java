@@ -16,18 +16,25 @@ public class InvoiceDetailEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "invoiceId")
+    @JoinColumn(name = "invoice_id")
     private InvoiceEntity invoice;
+
+    @Column(name = "invoice_id", insertable = false, updatable = false)
+    private Long invoiceId;
+
+    // Campo simple para el ID del producto (sin relación)
+    @Column(name = "product_id")
+    private Long productId;
 
     private Integer quantity;
     private Double price;
     private Double subtotal;
     private String productName;
-    private Long productId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "productId", insertable = false, updatable = false)
-    private ProductEntity product;
+    // Quitamos la relación con ProductEntity para evitar conflictos
+    // @ManyToOne(fetch = FetchType.LAZY)
+    // @JoinColumn(name = "productId", insertable = false, updatable = false)
+    // private ProductEntity product;
 
     @Override
     public int hashCode() {

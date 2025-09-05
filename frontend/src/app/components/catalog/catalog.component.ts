@@ -17,7 +17,7 @@ export class CatalogComponent implements OnInit {
   categories: Category[] = [];
   filteredProducts: Product[] = [];
   isLoading = false;
-  
+
   // Filter properties
   searchTerm = '';
   selectedCategories: number[] = [];
@@ -128,7 +128,7 @@ export class CatalogComponent implements OnInit {
     // Sort
     filtered.sort((a, b) => {
       let aValue: any, bValue: any;
-      
+
       switch (this.sortBy) {
         case 'name':
           aValue = a.name.toLowerCase();
@@ -160,7 +160,7 @@ export class CatalogComponent implements OnInit {
   addToCart(product: Product): void {
     if (product.stock > 0) {
       this.cartService.addItemToLocalCart(product, 1);
-      this.notificationService.showSuccess(`"${product.name}" agregado al carrito`);
+
     }
   }
 

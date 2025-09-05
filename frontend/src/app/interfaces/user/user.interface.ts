@@ -1,11 +1,18 @@
 export interface UserPurchase {
   id: number;
+  invoiceNumber: string;
   userId: number;
-  totalAmount: number;
   status: string;
-  createdAt: Date;
-  updatedAt: Date;
   items: PurchaseItem[];
+  subtotal: number;
+  shipping: number;
+  totalAmount: number;
+  shippingAddress: Address;
+  billingAddress: Address;
+  paymentMethod: string;
+  paymentStatus: string;
+  invoiceDate: Date;
+  updatedAt: Date;
 }
 
 export interface PurchaseItem {
@@ -16,4 +23,12 @@ export interface PurchaseItem {
   quantity: number;
   price: number;
   subtotal: number;
+}
+
+export interface Address {
+  street: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
 }

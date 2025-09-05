@@ -5,7 +5,9 @@ import guzman.SalesDashboard.dtos.OrderResponseDTO;
 import guzman.SalesDashboard.entities.Address;
 import guzman.SalesDashboard.entities.InvoiceDetailEntity;
 import guzman.SalesDashboard.entities.InvoiceEntity;
+import guzman.SalesDashboard.entities.UserEntity;
 import guzman.SalesDashboard.repositories.InvoiceRepository;
+import guzman.SalesDashboard.repositories.UserRepository;
 import guzman.SalesDashboard.services.InvoiceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,7 @@ import java.util.stream.Collectors;
 public class InvoiceServiceImpl implements InvoiceService {
 
     private final InvoiceRepository invoiceRepository;
+    private final UserRepository userRepository;
 
     @Override
     @Transactional
@@ -30,22 +33,30 @@ public class InvoiceServiceImpl implements InvoiceService {
         invoice.setInvoiceNumber(generateInvoiceNumber());
         invoice.setStatus(InvoiceEntity.InvoiceStatus.PENDING);
         invoice.setPaymentStatus(InvoiceEntity.PaymentStatus.PENDING);
-        invoice.setPaymentMethod(InvoiceEntity.PaymentMethod.valueOf(request.getPaymentMethod()));
+        invoice.setPaymentMethod(request.getPaymentMethod()); // Ahora es String, no enum
         
         // Configurar direcciones
         invoice.setShippingAddress(convertToAddress(request.getShippingAddress()));
         invoice.setBillingAddress(convertToAddress(request.getBillingAddress()));
         
+        // Para guest users, no asignamos usuario
+        if (userId != null) {
+            // Buscar el usuario por ID
+            UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + userId));
+            invoice.setUser(user);
+        }
+        // Si userId es null, la factura se crea sin usuario (guest order)
+        
         // Calcular totales
         double subtotal = request.getItems().stream()
                 .mapToDouble(item -> item.getSubtotal())
                 .sum();
-        double tax = subtotal * 0.21; // 21% IVA
         double shipping = subtotal > 50 ? 0 : 10; // Envío gratis sobre $50
-        double total = subtotal + tax + shipping;
+        double total = subtotal + shipping;
         
         invoice.setSubtotal(subtotal);
-        invoice.setTax(tax);
+        invoice.setTax(0.0); // Sin impuestos
         invoice.setShipping(shipping);
         invoice.setTotalAmount(total);
         
@@ -92,10 +103,9 @@ public class InvoiceServiceImpl implements InvoiceService {
         response.setUserId(invoice.getUserId());
         response.setStatus(invoice.getStatus().name());
         response.setSubtotal(invoice.getSubtotal());
-        response.setTax(invoice.getTax());
         response.setShipping(invoice.getShipping());
         response.setTotalAmount(invoice.getTotalAmount());
-        response.setPaymentMethod(invoice.getPaymentMethod().name());
+        response.setPaymentMethod(invoice.getPaymentMethod()); // Ahora es String, no enum
         response.setPaymentStatus(invoice.getPaymentStatus().name());
         response.setInvoiceDate(invoice.getInvoiceDate());
         response.setUpdatedAt(invoice.getUpdatedAt());

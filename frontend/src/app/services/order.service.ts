@@ -36,6 +36,10 @@ export class OrderService {
     return this.http.post<Order>(this.API_URL, orderData);
   }
 
+  createGuestOrder(orderData: CreateOrderRequest): Observable<Order> {
+    return this.http.post<Order>(`${this.API_URL}/guest`, orderData);
+  }
+
   updateOrderStatus(id: number, status: string): Observable<Order> {
     return this.http.patch<Order>(`${this.API_URL}/${id}/status`, { status });
   }
