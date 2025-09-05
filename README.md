@@ -1,8 +1,8 @@
-# 🛒 SalesDashboard - E-commerce Full Stack
+#  SalesDashboard - E-commerce Full Stack
 
 Un e-commerce completo hecho con **Spring Boot** y **Angular**. Tiene todo lo basico: productos, usuarios, carrito y pagos con **MercadoPago**.
 
-## 🚀 Que tiene
+##  Que tiene
 
 ### Backend (Spring Boot)
 - **JWT** para login con roles de usuario y admin
@@ -21,7 +21,7 @@ Un e-commerce completo hecho con **Spring Boot** y **Angular**. Tiene todo lo ba
 - **Guards** para proteger rutas
 - **Responsive** para celular y desktop
 
-## 🛠️ Stack tecnológico
+##  Stack tecnológico
 
 ### Backend
 - **Java 17**
@@ -209,6 +209,7 @@ Si queres contribuir:
 - [ ] **Modo oscuro** en el frontend
 - [ ] **Tests unitarios** y de integracion
 - [ ] **Docker** para deployment
+
 
 
 
